@@ -27,6 +27,28 @@ from core import *
 def myBuildPathNetwork(pathnodes, world, agent = None):
 	lines = []
 	### YOUR CODE GOES BELOW HERE ###
+	obstacleLines = world.getLines()
+	obstaclePoints = world.getPoints()
+	radius = agent.getMaxRadius()
 
+	for node in pathnodes:
+		for node2 in pathnodes:
+			if node != node2 and rayTraceWorld(node, node2, obstacleLines) == None:
+				# we will check at every point in the path if a perpendicular ray from that point intersects an obstacle
+				pathPoints = []
+				dx = node[0] - node2[0]
+				dy = node[1] - node2[1]
+				add = True
+				dist = distance(node, node2)
+				steps = 10
+				for i in range(steps):
+					t = i / steps  
+					x = node[0] + (dx * t)
+					y = node[1] + (dy * t)
+					pathPoints.append((x, y))
+				for p in pathPoints:
+					radiusPoint1 = (p[0] + ((node2[0]-node[0])*radius/dist), p[1] + ((node[1]-node2[1])*radius/dist))
+					lines.append((p, radiusPoint1))
+				lines.append((node, node2))
 	### YOUR CODE GOES ABOVE HERE ###
 	return lines
