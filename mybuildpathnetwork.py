@@ -30,20 +30,20 @@ def myBuildPathNetwork(pathnodes, world, agent = None):
 	obstacleLines = world.getLines()
 	obstaclePoints = world.getPoints()
 	radius = agent.getMaxRadius() * 2
-	# how many points along each path do we check for adequate width and not hit an obstacle, i found 20 is adequate
-	steps = 20
 
 	for node in pathnodes:
 		for node2 in pathnodes:
 			if node != node2 and rayTraceWorld(node, node2, obstacleLines) == None:
+				# For each non-colliding path, we will draw perpendicular lines of length 2*agentRadius at every single point on the path
+				# If these perpendicular "width-check" lines collide with an obstacle, we know that path is too close to an obstacle so it will not be returned
 				adequateWidth = True
 				width_check_lines = []
 				dx = node2[0] - node[0]
 				dy = node2[1] - node[1]
 				length = distance(node2, node)
-				for i in range(0, steps + 1):  # Generate equally spaced points along the segment
-					t = i / steps
-					# Calculate the point on the segment
+				for i in range(0, int(length) + 1): 
+					t = i / int(length)
+					# Calculate the next point on the segment
 					nextPoint = (node[0] + t * dx, node[1] + t * dy)
 					# Calculate a perpendicular vector of length radius
 					# Normalize the perpendicular vector
