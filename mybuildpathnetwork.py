@@ -29,26 +29,38 @@ def myBuildPathNetwork(pathnodes, world, agent = None):
 	### YOUR CODE GOES BELOW HERE ###
 	obstacleLines = world.getLines()
 	obstaclePoints = world.getPoints()
-	radius = agent.getMaxRadius()
+	radius = agent.getMaxRadius() * 2
+	# how many points along each path do we check for adequate width and not hit an obstacle, i found 20 is adequate
+	steps = 20
 
 	for node in pathnodes:
 		for node2 in pathnodes:
 			if node != node2 and rayTraceWorld(node, node2, obstacleLines) == None:
-				# we will check at every point in the path if a perpendicular ray from that point intersects an obstacle
-				pathPoints = []
-				dx = node[0] - node2[0]
-				dy = node[1] - node2[1]
-				add = True
-				dist = distance(node, node2)
-				steps = 10
-				for i in range(steps):
-					t = i / steps  
-					x = node[0] + (dx * t)
-					y = node[1] + (dy * t)
-					pathPoints.append((x, y))
-				for p in pathPoints:
-					radiusPoint1 = (p[0] + ((node2[0]-node[0])*radius/dist), p[1] + ((node[1]-node2[1])*radius/dist))
-					lines.append((p, radiusPoint1))
-				lines.append((node, node2))
+				adequateWidth = True
+				width_check_lines = []
+				dx = node2[0] - node[0]
+				dy = node2[1] - node[1]
+				length = distance(node2, node)
+				for i in range(0, steps + 1):  # Generate equally spaced points along the segment
+					t = i / steps
+					# Calculate the point on the segment
+					nextPoint = (node[0] + t * dx, node[1] + t * dy)
+					# Calculate a perpendicular vector of length radius
+					# Normalize the perpendicular vector
+					perp_dx, perp_dy = dy, -dx
+					norm = ((perp_dx**2) + (perp_dy**2))**0.5
+					perp_dx, perp_dy = perp_dx / norm, perp_dy / norm
+					# Calculate endpoints of the perpendicular line of length radius
+					perp_line_start = (nextPoint[0] + perp_dx * radius / 2, nextPoint[1] + perp_dy * radius / 2)
+					perp_line_end = (nextPoint[0] - perp_dx * radius / 2, nextPoint[1] - perp_dy * radius / 2)
+					# Append the perpendicular line to the width lines list
+					width_check_lines.append((perp_line_start, perp_line_end))
+					# Uncomment below to see the width lines
+					#lines.append((perp_line_start, perp_line_end))
+				for width_line in width_check_lines:
+					if rayTraceWorld(width_line[0], width_line[1], obstacleLines) != None:
+						adequateWidth = False
+				if adequateWidth:
+					lines.append((node, node2))
 	### YOUR CODE GOES ABOVE HERE ###
 	return lines
